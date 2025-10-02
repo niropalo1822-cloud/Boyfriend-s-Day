@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Virtual Surprise — Flowers & Letter</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#f472b6;--muted:#94a3b8}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:linear-gradient(180deg,#061223 0%, #081727 100%);color:#e6eef8}
+    .wrap{width:95%;max-width:760px;padding:28px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+    header{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:10px;display:grid;place-items:center;font-weight:700;background:linear-gradient(135deg,#ffecd2,#f472b6);color:#07203a}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 20px;color:var(--muted)}
+    .card{background:rgba(255,255,255,0.02);padding:20px;border-radius:12px}
+    .step-title{font-size:18px;margin:0 0 8px}
+    .media{display:block;width:100%;height:280px;border-radius:10px;background:#071124;display:grid;place-items:center;overflow:hidden}
+    .media img{width:100%;height:100%;object-fit:cover}
+    .controls{display:flex;gap:12px;margin-top:14px}
+    button{flex:1;padding:12px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .yes{background:linear-gradient(90deg,#10b981,#34d399);color:#042017}
+    .no{background:linear-gradient(90deg,#ef4444,#f97316);color:white}
+    .next{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .hidden{display:none}
+    .small{font-size:13px;color:var(--muted);margin-top:8px}
+    textarea{width:100%;height:140px;border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .center{display:flex;gap:10px;align-items:center}
+    .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:99px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#f472b6);width:0%}
+    footer{margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+    .muted{color:var(--muted);font-size:13px}
+    .admin-note{font-size:12px;color:#fce7f3;margin-top:8px}
+    @media (max-width:520px){.media{height:200px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">🌸</div>
+      <div>
+        <h1>Virtual Surprise — a lil' flower trail</h1>
+        <p class="lead">One yes/no at a time. He chooses, you surprise. (Edit the config in the code to customize.)</p>
+      </div>
+    </header>
+
+    <div class="card" id="app">
+      <div class="progress" aria-hidden><i id="prog"></i></div>
+
+      <div id="stepArea">
+        <!-- dynamic content -->
+      </div>
+
+      <div class="small muted" id="status">Progress saved locally. To edit content: open the file and tweak the <code>CONFIG</code> object at top.</div>
+    </div>
+
+    <footer>
+      <div class="muted">Made with ✨</div>
+      <div class="muted">Tip: press R to restart</div>
+    </footer>
+  </div>
+
+  <script>
+    /*********************
+     * CONFIG - edit these values to customize the experience.
+     * For each step, set the title, image (or leave blank), the question
+     * the yesMessage and noMessage (what he sees when he clicks yes/no),
+     * and optionally revealOnYes/revealOnNo to show extra content (like a photo or letter).
+     *********************/
+
+    const CONFIG = {
+      pageTitle: "Happy Boyfriend's Day My Love",
+      steps: [
+        {
+          id: "flowers",
+          title: "Flowers for my Sweetheart",
+          image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd",
+          question: "I picked this just for you — will you take it?",
+          yesMessage: "Yay! 🌷 I knew you'd like it. Click next for a photo.",
+          noMessage: "Click On Yes",
+          revealOnYes: null,
+          revealOnNo: null
+        },
+        {
+          id: "photo",
+          title: "Digital Photo Time?",
+          image: "", // if empty, the UI will show a placeholder
+          question: "Tell me you want to see it",
+          yesMessage: "Here it is — hope it makes you smile.",
+          noMessage: "No worries — it's saved for later.",
+          revealOnYes: {
+            type: "image",
+            src: "https://images.unsplash.com/photo-1511988617509-a57c8a288659?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=efgh"
+          },
+          revealOnNo: null
+        },
+        {
+          id: "letter",
+          title: "Would you like to read a short letter?",
+          image: "",
+          question: "This last thing is a little letter I wrote — read it?",
+          yesMessage: "Open up 💌",
+          noMessage: "Do you hate me?",
+          revealOnYes: {
+            type: "text",
+            text: "Happy Boyfriend's Day My Love, I wanted to make this extra special for you (broke edition) But i didnt know how to so take this as a small token of appreciation from your not so easy girlfriend. I absolutely love you from the bottom of my heart. More than anything or anyone else. You have walked into my life like an absolute blessing and have proved to be the best boyfriend ever after that. You make my heart happy in a way i never knew was possible and not only do i love spending my time with you but i really want to spend the rest of my life with you as well. I know I am not easy to go by and I promise im working on it I'll do my best to become better for you everyday bc I cant imagine you living with someone else and you deserve the absolute best. I'll spend my life giving you back the love you deserve and making you believe that you , my love , is worth every single struggle the world can throw. I love you , now and forever. From your chicken nugget <3 
+          },
+          revealOnNo: null
+        }
+      ],
+      // small secret key (optional) to reveal an admin edit panel if you append ?edit=YES to the URL
+      editKey: "let-me-edit-123"
+    };
+
+    /*********************
+     * End of CONFIG
+     *********************/
+
+    // Basic app logic:
+    const app = document.getElementById('app');
+    const stepArea = document.getElementById('stepArea');
+    const prog = document.getElementById('prog');
+
+    // State
+    let state = {
+      index: 0,
+      decisions: []
+    };
+
+    // Try to load saved state
+    try {
+      const saved = localStorage.getItem('virtual-surprise-state');
+      if (saved) state = JSON.parse(saved);
+    } catch (e){/*ignore*/}
+
+    function saveState(){
+      localStorage.setItem('virtual-surprise-state', JSON.stringify(state));
+    }
+
+    function pct(){
+      const p = Math.round((state.index / CONFIG.steps.length) * 100);
+      prog.style.width = p + '%';
+    }
+
+    function render(){
+      document.title = CONFIG.pageTitle;
+      pct();
+      const step = CONFIG.steps[state.index];
+      if(!step){
+        stepArea.innerHTML = `
+          <h2 class="step-title">All done 🎉</h2>
+          <p class="small">You completed the trail. Here's a quick summary of choices:</p>
+          <div style="margin-top:12px;">
+            ${CONFIG.steps.map((s,i)=>`<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px"><strong>${s.title}</strong><div class="muted">Answer: ${state.decisions[i] ?? '—'}</div></div>`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px"><button class="next" id="restart">Restart</button><button class="next" id="clear">Clear Saved</button></div>
+        `;
+        document.getElementById('restart').addEventListener('click', () => { state.index = 0; state.decisions = []; saveState(); render(); });
+        document.getElementById('clear').addEventListener('click', () => { localStorage.removeItem('virtual-surprise-state'); state = {index:0,decisions:[]}; render(); });
+        return;
+      }
+
+      stepArea.innerHTML = `
+        <h2 class="step-title">${step.title}</h2>
+        <div class="media" id="media">
+          ${step.image ? `<img src="${step.image}" alt="step image">` : `<div class="center muted">No image provided — replace CONFIG.steps[${state.index}].image with a URL to show one</div>`}
+        </div>
+        <p style="margin-top:12px">${step.question}</p>
+        <div class="controls">
+          <button class="yes" id="yesBtn">Yes</button>
+          <button class="no" id="noBtn">No</button>
+        </div>
+        <div id="result" class="hidden" style="margin-top:12px"></div>
+      `;
+
+      document.getElementById('yesBtn').addEventListener('click', () => handleResponse('Yes'));
+      document.getElementById('noBtn').addEventListener('click', () => handleResponse('No'));
+    }
+
+    function handleResponse(answer){
+      const step = CONFIG.steps[state.index];
+      const result = document.getElementById('result');
+      state.decisions[state.index] = answer;
+      saveState();
+
+      const msg = answer === 'Yes' ? step.yesMessage : step.noMessage;
+      let extraHTML = `<p class="small">${escapeHtml(msg).replace(/\n/g,'<br>')}</p>`;
+
+      const reveal = answer === 'Yes' ? step.revealOnYes : step.revealOnNo;
+      if(reveal){
+        if(reveal.type === 'image'){
+          extraHTML += `<div style="margin-top:10px;border-radius:8px;overflow:hidden"><img src="${reveal.src}" style="width:100%;height:240px;object-fit:cover;border-radius:8px"/></div>`;
+        } else if(reveal.type === 'text'){
+          extraHTML += `<textarea readonly>${reveal.text}</textarea>`;
+        } else if(reveal.type === 'html'){
+          extraHTML += `<div>${reveal.html}</div>`;
+        }
+      }
+
+      extraHTML += `<div style="display:flex;gap:10px;margin-top:12px"><button class="next" id="nextBtn">Next</button><button class="next" id="undoBtn">Undo</button></div>`;
+      result.innerHTML = extraHTML;
+      result.classList.remove('hidden');
+
+      document.getElementById('nextBtn').addEventListener('click', () => { state.index++; saveState(); render(); });
+      document.getElementById('undoBtn').addEventListener('click', () => { state.decisions[state.index] = null; saveState(); result.classList.add('hidden'); });
+    }
+
+    // small helper
+    function escapeHtml(str){
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // keyboard shortcut
+    window.addEventListener('keydown', (e) => {
+      if(e.key.toLowerCase() === 'r'){ localStorage.removeItem('virtual-surprise-state'); state={index:0,decisions:[]}; render(); }
+    });
+
+    // Quick admin editor if ?edit=KEY is present in url
+    function maybeShowEditor(){
+      const params = new URLSearchParams(location.search);
+      if(params.get('edit') === CONFIG.editKey){
+        const editor = document.createElement('div');
+        editor.innerHTML = `
+          <div style="margin-top:12px;padding:12px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));">
+            <strong>Quick Editor</strong>
+            <p class="muted">This edits content only in your browser (localStorage). To make permanent edits, change the CONFIG in the HTML file.</p>
+            <textarea id="editorContent">${escapeHtml(JSON.stringify(CONFIG,null,2))}</textarea>
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="saveEdit" class="next">Save to local</button><button id="closeEdit" class="next">Close</button></div>
+          </div>
+        `;
+        app.insertBefore(editor, app.firstChild);
+        document.getElementById('saveEdit').addEventListener('click', () => {
+          try{
+            const newCfg = JSON.parse(document.getElementById('editorContent').value);
+            // update CONFIG object in memory (won't rewrite the file)
+            Object.assign(CONFIG, newCfg);
+            localStorage.setItem('virtual-surprise-config', JSON.stringify(CONFIG));
+            alert('Saved to browser storage. Refresh to apply.');
+          }catch(err){ alert('Invalid JSON: ' + err.message); }
+        });
+        document.getElementById('closeEdit').addEventListener('click', () => editor.remove());
+      }
+    }
+
+    // If the sender had previously saved a custom CONFIG to localStorage, load it
+    try{
+      const localCfg = localStorage.getItem('virtual-surprise-config');
+      if(localCfg){
+        const parsed = JSON.parse(localCfg);
+        if(parsed && parsed.steps) Object.assign(CONFIG, parsed);
+      }
+    }catch(e){/*ignore*/}
+
+    maybeShowEditor();
+    render();
+  </script>
+</body>
+</html>
+"Add site" 
